@@ -16,7 +16,7 @@ from msmart.device import AirConditioner as AC
 from msmart.lan import AuthenticationError
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.midea_ac.const import *
+from custom_components.midea_connect.const import *
 
 logging.basicConfig(level=logging.DEBUG)
 _LOGGER = logging.getLogger(__name__)
@@ -24,14 +24,15 @@ _LOGGER = logging.getLogger(__name__)
 
 async def test_config_flow_options(hass: HomeAssistant) -> None:
     """Test the config flow starts with a menu with manual and discover options."""
-    # Check initial flow is a menu with two options
+    # Adding devices offers setup and restore; credentials are saved automatically.
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": config_entries.SOURCE_USER}
     )
 
     assert result["step_id"] == "user"
     assert result["type"] is FlowResultType.MENU
-    assert result["menu_options"] == ["discover", "manual"]
+    assert result["menu_options"] == [
+        "nearby_bluetooth", "account", "advanced"]
 
     # Check discover flow can be started
     discover_form_result = await hass.config_entries.flow.async_init(
@@ -58,7 +59,7 @@ async def test_discover_flow_no_devices_found(hass: HomeAssistant) -> None:
     assert result
 
     with patch(
-        "custom_components.midea_ac.config_flow.Discover.discover",
+        "custom_components.midea_connect.config_flow.Discover.discover",
         new_callable=AsyncMock,
         return_value=[]
     ):
@@ -93,7 +94,7 @@ async def test_discover_flow_already_configured_devices_found(
     )
 
     with patch(
-        "custom_components.midea_ac.config_flow.Discover.discover",
+        "custom_components.midea_connect.config_flow.Discover.discover",
         new_callable=AsyncMock,
         return_value=[mock_device]
     ):
@@ -137,7 +138,7 @@ async def test_discover_flow_new_and_already_configured_devices(
     assert result
 
     with patch(
-        "custom_components.midea_ac.config_flow.Discover.discover",
+        "custom_components.midea_connect.config_flow.Discover.discover",
         new_callable=AsyncMock,
         return_value=[mock_existing_device, mock_new_device]
     ):
@@ -164,68 +165,12 @@ def test_cloud_country_codes_are_known_to_msmart() -> None:
     assert CONF_DEFAULT_CLOUD_COUNTRY in NetHomePlusCloud.CLOUD_CREDENTIALS
 
 
-@pytest.mark.parametrize(
-    "country_code",
-    CONF_CLOUD_COUNTRY_CODES
-)
-async def test_discover_flow_uses_selected_region(
-    hass: HomeAssistant,
-    country_code: str,
-) -> None:
-    """Test the selected country is passed to discovery as the cloud region."""
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": "discover"}
-    )
-    assert result
-
-    # Check cloud region is passed to discover method
-    with patch(
-        "custom_components.midea_ac.config_flow.Discover.discover",
-        new_callable=AsyncMock,
-        return_value=[]
-    ) as mock_discover:
-        await hass.config_entries.flow.async_configure(
-            result["flow_id"],
-            user_input={CONF_HOST: "", CONF_COUNTRY_CODE: country_code}
-        )
-
-    mock_discover.assert_awaited_once()
-    kwargs = mock_discover.await_args.kwargs
-
-    # Region must be forwarded so msmart-ng selects the right credentials
-    assert kwargs["region"] == country_code
-
-    # The integration must not supply its own credentials
-    assert "account" not in kwargs
-    assert "password" not in kwargs
-
-    # Restart flow
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": "discover"}
-    )
-    assert result
-
-    # Check cloud region is passed to discover_single method
-    with patch(
-        "custom_components.midea_ac.config_flow.Discover.discover_single",
-        new_callable=AsyncMock,
-        return_value=None
-    ) as mock_discover_single:
-        await hass.config_entries.flow.async_configure(
-            result["flow_id"],
-            user_input={CONF_HOST: "10.0.0.41",
-                        CONF_COUNTRY_CODE: country_code}
-        )
-
-    mock_discover_single.assert_awaited_once()
-    kwargs = mock_discover_single.await_args.kwargs
-
-    # Region must be forwarded so msmart-ng selects the right credentials
-    assert kwargs["region"] == country_code
-
-    # The integration must not supply its own credentials
-    assert "account" not in kwargs
-    assert "password" not in kwargs
+async def test_lan_discovery_does_not_require_cloud_region(hass):
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "discover"})
+    assert CONF_COUNTRY_CODE not in result["data_schema"].schema
+    with patch("custom_components.midea_connect.config_flow.Discover.discover", return_value=[]) as scan:
+        await hass.config_entries.flow.async_configure(result["flow_id"], {CONF_HOST: ""})
+    assert scan.call_args.kwargs["auto_connect"] is False
 
 
 async def test_discover_flow_cloud_error(
@@ -241,7 +186,7 @@ async def test_discover_flow_cloud_error(
     mock_device = create_mock_device()
 
     with patch(
-        "custom_components.midea_ac.config_flow.Discover.discover",
+        "custom_components.midea_connect.config_flow.Discover.discover",
         new_callable=AsyncMock,
         return_value=[mock_device]
     ):
@@ -254,7 +199,7 @@ async def test_discover_flow_cloud_error(
     assert result["step_id"] == "pick_device"
 
     with patch(
-        "custom_components.midea_ac.config_flow.Discover.connect",
+        "custom_components.midea_connect.config_flow.Discover.connect",
         side_effect=CloudError(
             "Failed to login to cloud. Code: 3102, Message: this account does not exist")
     ):
@@ -264,8 +209,8 @@ async def test_discover_flow_cloud_error(
         )
 
     # Flow should abort with a reason
-    assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "cloud_connection_failed"
+    assert result["type"] is FlowResultType.MENU
+    assert result["step_id"] == "lan_credentials"
 
 
 async def test_discover_flow_cant_connect(
@@ -281,7 +226,7 @@ async def test_discover_flow_cant_connect(
     mock_device = create_mock_device()
 
     with patch(
-        "custom_components.midea_ac.config_flow.Discover.discover",
+        "custom_components.midea_connect.config_flow.Discover.discover",
         new_callable=AsyncMock,
         return_value=[mock_device]
     ):
@@ -294,7 +239,7 @@ async def test_discover_flow_cant_connect(
     assert result["step_id"] == "pick_device"
 
     with patch(
-        "custom_components.midea_ac.config_flow.Discover.connect",
+        "custom_components.midea_connect.config_flow.Discover.connect",
         return_value=False
     ):
         result = await hass.config_entries.flow.async_configure(
@@ -303,8 +248,8 @@ async def test_discover_flow_cant_connect(
         )
 
     # Connection should fail
-    assert result["type"] is FlowResultType.ABORT
-    assert result["reason"] == "cannot_connect"
+    assert result["type"] is FlowResultType.MENU
+    assert result["step_id"] == "lan_credentials"
 
 
 async def test_manual_flow_invalid_input(hass: HomeAssistant) -> None:
@@ -374,7 +319,7 @@ async def test_manual_flow_cant_connect_v2(hass: HomeAssistant) -> None:
     assert result
 
     # Patch construct to build a mock device that isn't online
-    with patch("custom_components.midea_ac.config_flow.Device.construct", autospec=True) as mock_construct:
+    with patch("custom_components.midea_connect.config_flow.Device.construct", autospec=True) as mock_construct:
         device = MagicMock(spec=AC)
         device.refresh = AsyncMock()
         type(device).online = PropertyMock(return_value=False)
@@ -411,7 +356,7 @@ async def test_manual_flow_cant_connect_v3(hass: HomeAssistant) -> None:
     assert result
 
     # Patch construct to build a mock device that isn't online
-    with patch("custom_components.midea_ac.config_flow.Device.construct", autospec=True) as mock_construct:
+    with patch("custom_components.midea_connect.config_flow.Device.construct", autospec=True) as mock_construct:
         device = MagicMock(spec=AC)
         device.refresh = AsyncMock()
         type(device).online = PropertyMock(return_value=False)
@@ -451,7 +396,7 @@ async def test_manual_flow_cant_authenticate(hass: HomeAssistant) -> None:
     assert result
 
     # Patch construct to build a mock device that fails to authenticate
-    with patch("custom_components.midea_ac.config_flow.Device.construct", autospec=True) as mock_construct:
+    with patch("custom_components.midea_connect.config_flow.Device.construct", autospec=True) as mock_construct:
         device = MagicMock(spec=AC)
         device.authenticate = AsyncMock(side_effect=AuthenticationError)
         device.refresh = AsyncMock()
@@ -491,7 +436,7 @@ async def test_manual_flow_unsupported_device(hass: HomeAssistant) -> None:
     assert result
 
     # Patch construct to build a mock device that is online but unsupported
-    with patch("custom_components.midea_ac.config_flow.Device.construct", autospec=True) as mock_construct:
+    with patch("custom_components.midea_connect.config_flow.Device.construct", autospec=True) as mock_construct:
         device = MagicMock(spec=AC)
         device.refresh = AsyncMock()
         type(device).online = PropertyMock(return_value=True)
@@ -527,10 +472,10 @@ async def test_manual_flow_ac_device(hass: HomeAssistant) -> None:
 
     # Patch AC device refresh method
     with (
-        patch("custom_components.midea_ac.async_setup_entry", return_value=True),
-        patch("custom_components.midea_ac.config_flow.AC.refresh") as refresh_mock,
-        patch("custom_components.midea_ac.config_flow.AC.online", new_callable=PropertyMock) as online_mock,
-        patch("custom_components.midea_ac.config_flow.AC.supported", new_callable=PropertyMock) as supported_mock
+        patch("custom_components.midea_connect.async_setup_entry", return_value=True),
+        patch("custom_components.midea_connect.config_flow.AC.refresh") as refresh_mock,
+        patch("custom_components.midea_connect.config_flow.AC.online", new_callable=PropertyMock) as online_mock,
+        patch("custom_components.midea_connect.config_flow.AC.supported", new_callable=PropertyMock) as supported_mock
     ):
 
         # Mock device online and supported
@@ -566,10 +511,10 @@ async def test_manual_flow_cc_device(hass: HomeAssistant) -> None:
 
     # Patch CC device refresh method
     with (
-        patch("custom_components.midea_ac.async_setup_entry", return_value=True),
-        patch("custom_components.midea_ac.config_flow.CC.refresh") as refresh_mock,
-        patch("custom_components.midea_ac.config_flow.CC.online", new_callable=PropertyMock) as online_mock,
-        patch("custom_components.midea_ac.config_flow.CC.supported", new_callable=PropertyMock) as supported_mock
+        patch("custom_components.midea_connect.async_setup_entry", return_value=True),
+        patch("custom_components.midea_connect.config_flow.CC.refresh") as refresh_mock,
+        patch("custom_components.midea_connect.config_flow.CC.online", new_callable=PropertyMock) as online_mock,
+        patch("custom_components.midea_connect.config_flow.CC.supported", new_callable=PropertyMock) as supported_mock
     ):
 
         # Mock device online and supported
@@ -607,11 +552,11 @@ async def test_default_options_isolation(
     assert result
 
     with (
-        patch("custom_components.midea_ac.async_setup_entry", return_value=True),
-        patch("custom_components.midea_ac.config_flow.AC.refresh"),
-        patch("custom_components.midea_ac.config_flow.AC.online",
+        patch("custom_components.midea_connect.async_setup_entry", return_value=True),
+        patch("custom_components.midea_connect.config_flow.AC.refresh"),
+        patch("custom_components.midea_connect.config_flow.AC.online",
               new_callable=PropertyMock(return_value=True)),
-        patch("custom_components.midea_ac.config_flow.AC.supported",
+        patch("custom_components.midea_connect.config_flow.AC.supported",
               new_callable=PropertyMock(return_value=True)),
     ):
         # Configure device
@@ -642,11 +587,11 @@ async def test_default_options_isolation(
     assert result
 
     with (
-        patch("custom_components.midea_ac.async_setup_entry", return_value=True),
-        patch("custom_components.midea_ac.config_flow.CC.refresh"),
-        patch("custom_components.midea_ac.config_flow.CC.online",
+        patch("custom_components.midea_connect.async_setup_entry", return_value=True),
+        patch("custom_components.midea_connect.config_flow.CC.refresh"),
+        patch("custom_components.midea_connect.config_flow.CC.online",
               new_callable=PropertyMock(return_value=True)),
-        patch("custom_components.midea_ac.config_flow.CC.supported",
+        patch("custom_components.midea_connect.config_flow.CC.supported",
               new_callable=PropertyMock(return_value=True)),
     ):
         # Configure device
@@ -678,8 +623,8 @@ async def test_options_flow_init(
     """Test the integration options flow works and default options are set."""
 
     # Patch refresh and get_capabilities calls to allow integration to setup
-    with (patch("custom_components.midea_ac.config_flow.AC.get_capabilities"),
-          patch("custom_components.midea_ac.config_flow.AC.refresh")):
+    with (patch("custom_components.midea_connect.config_flow.AC.get_capabilities"),
+          patch("custom_components.midea_connect.config_flow.AC.refresh")):
         # Add mock config entry to HASS and setup integration
         mock_config_entry.add_to_hass(hass)
         await hass.config_entries.async_setup(mock_config_entry.entry_id)
@@ -688,13 +633,17 @@ async def test_options_flow_init(
     assert mock_config_entry.entry_id in hass.data[DOMAIN]
     assert mock_config_entry.state is ConfigEntryState.LOADED
 
-    # Show options form
+    # Open settings from this device's options menu.
     result = await hass.config_entries.options.async_init(mock_config_entry.entry_id)
     assert result["step_id"] == "init"
+    assert result["type"] is FlowResultType.MENU
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"next_step_id": "settings"})
+    assert result["step_id"] == "settings"
     assert result["type"] is FlowResultType.FORM
     assert not result["errors"]
 
-    with patch("custom_components.midea_ac.async_setup_entry",
+    with patch("custom_components.midea_connect.async_setup_entry",
                return_value=True) as mock_setup_entry:
         result = await hass.config_entries.options.async_configure(
             result["flow_id"],
@@ -720,8 +669,8 @@ async def test_reconfigure_flow_invalid_input(
     """Test the reconfigure flow validates input."""
 
     # Patch refresh and get_capabilities calls to allow integration to setup
-    with (patch("custom_components.midea_ac.config_flow.AC.get_capabilities"),
-          patch("custom_components.midea_ac.config_flow.AC.refresh")):
+    with (patch("custom_components.midea_connect.config_flow.AC.get_capabilities"),
+          patch("custom_components.midea_connect.config_flow.AC.refresh")):
         # Add mock config entry to HASS and setup integration
         mock_config_entry.add_to_hass(hass)
         await hass.config_entries.async_setup(mock_config_entry.entry_id)
@@ -781,8 +730,8 @@ async def test_reconfigure_flow_cant_connect_v2(
     """Test the reconfigure flow returns error when connection fails."""
 
     # Patch refresh and get_capabilities calls to allow integration to setup
-    with (patch("custom_components.midea_ac.config_flow.AC.get_capabilities"),
-          patch("custom_components.midea_ac.config_flow.AC.refresh")):
+    with (patch("custom_components.midea_connect.config_flow.AC.get_capabilities"),
+          patch("custom_components.midea_connect.config_flow.AC.refresh")):
         # Add mock config entry to HASS and setup integration
         mock_config_entry.add_to_hass(hass)
         await hass.config_entries.async_setup(mock_config_entry.entry_id)
@@ -800,7 +749,7 @@ async def test_reconfigure_flow_cant_connect_v2(
     assert result
 
     # Patch construct to build a mock device that isn't online
-    with patch("custom_components.midea_ac.config_flow.Device.construct", autospec=True) as mock_construct:
+    with patch("custom_components.midea_connect.config_flow.Device.construct", autospec=True) as mock_construct:
         device = MagicMock(spec=AC)
         device.authenticate = AsyncMock()
         device.refresh = AsyncMock()
@@ -833,8 +782,8 @@ async def test_reconfigure_flow_cant_connect_v3(
     """Test the reconfigure flow returns error when authenticate succeeds but refresh fails."""
 
     # Patch refresh and get_capabilities calls to allow integration to setup
-    with (patch("custom_components.midea_ac.config_flow.AC.get_capabilities"),
-          patch("custom_components.midea_ac.config_flow.AC.refresh")):
+    with (patch("custom_components.midea_connect.config_flow.AC.get_capabilities"),
+          patch("custom_components.midea_connect.config_flow.AC.refresh")):
         # Add mock config entry to HASS and setup integration
         mock_config_entry.add_to_hass(hass)
         await hass.config_entries.async_setup(mock_config_entry.entry_id)
@@ -852,7 +801,7 @@ async def test_reconfigure_flow_cant_connect_v3(
     assert result
 
     # Patch construct to build a mock device that isn't online
-    with patch("custom_components.midea_ac.config_flow.Device.construct", autospec=True) as mock_construct:
+    with patch("custom_components.midea_connect.config_flow.Device.construct", autospec=True) as mock_construct:
         device = MagicMock(spec=AC)
         device.authenticate = AsyncMock()
         device.refresh = AsyncMock()
@@ -887,8 +836,8 @@ async def test_reconfigure_flow_cant_authenticate(
     """Test the reconfigure flow returns error when authentication fails."""
 
     # Patch refresh and get_capabilities calls to allow integration to setup
-    with (patch("custom_components.midea_ac.config_flow.AC.get_capabilities"),
-          patch("custom_components.midea_ac.config_flow.AC.refresh")):
+    with (patch("custom_components.midea_connect.config_flow.AC.get_capabilities"),
+          patch("custom_components.midea_connect.config_flow.AC.refresh")):
         # Add mock config entry to HASS and setup integration
         mock_config_entry.add_to_hass(hass)
         await hass.config_entries.async_setup(mock_config_entry.entry_id)
@@ -906,7 +855,7 @@ async def test_reconfigure_flow_cant_authenticate(
     assert result
 
     # Patch construct to build a mock device that can't authenticate
-    with patch("custom_components.midea_ac.config_flow.Device.construct", autospec=True) as mock_construct:
+    with patch("custom_components.midea_connect.config_flow.Device.construct", autospec=True) as mock_construct:
         device = MagicMock(spec=AC)
         device.authenticate = AsyncMock(side_effect=AuthenticationError)
         device.refresh = AsyncMock()
@@ -942,8 +891,8 @@ async def test_reconfigure_flow_unsupported_device(
     """Test the reconfigure flow when an unsupported device is configured."""
 
     # Patch refresh and get_capabilities calls to allow integration to setup
-    with (patch("custom_components.midea_ac.config_flow.AC.get_capabilities"),
-          patch("custom_components.midea_ac.config_flow.AC.refresh")):
+    with (patch("custom_components.midea_connect.config_flow.AC.get_capabilities"),
+          patch("custom_components.midea_connect.config_flow.AC.refresh")):
         # Add mock config entry to HASS and setup integration
         mock_config_entry.add_to_hass(hass)
         await hass.config_entries.async_setup(mock_config_entry.entry_id)
@@ -961,7 +910,7 @@ async def test_reconfigure_flow_unsupported_device(
     assert result
 
     # Patch construct to build a mock device that is online but unsupported
-    with patch("custom_components.midea_ac.config_flow.Device.construct", autospec=True) as mock_construct:
+    with patch("custom_components.midea_connect.config_flow.Device.construct", autospec=True) as mock_construct:
         device = MagicMock(spec=AC)
         device.refresh = AsyncMock()
         type(device).online = PropertyMock(return_value=True)

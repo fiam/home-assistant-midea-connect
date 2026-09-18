@@ -15,11 +15,11 @@ from msmart.device import AirConditioner as AC
 from msmart.device import CommercialAirConditioner as CC
 from msmart.utils import MideaIntEnum
 
-from custom_components.midea_ac.climate import (ClimateConfig,
-                                                MideaClimateACDevice,
-                                                MideaClimateCCDevice,
-                                                MideaClimateDevice)
-from custom_components.midea_ac.const import PRESET_IECO, PRESET_SILENT
+from custom_components.midea_connect.climate import (ClimateConfig,
+                                                     MideaClimateACDevice,
+                                                     MideaClimateCCDevice,
+                                                     MideaClimateDevice)
+from custom_components.midea_connect.const import PRESET_IECO, PRESET_SILENT
 
 logging.basicConfig(level=logging.DEBUG)
 _LOGGER = logging.getLogger(__name__)

@@ -8,7 +8,7 @@ import pytest
 from msmart.device import AirConditioner as AC
 from msmart.device import CommercialAirConditioner as CC
 
-from custom_components.midea_ac.device_proxy import MideaDeviceProxy
+from custom_components.midea_connect.device_proxy import MideaDeviceProxy
 
 logging.basicConfig(level=logging.DEBUG)
 _LOGGER = logging.getLogger(__name__)
@@ -69,7 +69,7 @@ async def test_device_proxy_staging() -> None:
     assert device.target_temperature == 25
 
     # Apply via proxy
-    with patch("custom_components.midea_ac.config_flow.AC.apply") as apply_mock:
+    with patch("custom_components.midea_connect.config_flow.AC.apply") as apply_mock:
         await proxy.apply()
         apply_mock.assert_awaited_once()
 

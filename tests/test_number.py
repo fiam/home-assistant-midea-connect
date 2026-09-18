@@ -6,9 +6,9 @@ import pytest
 from homeassistant.core import HomeAssistant
 from msmart.device import AirConditioner as AC
 
-from custom_components.midea_ac.climate import MideaClimateACDevice
-from custom_components.midea_ac.device_proxy import MideaDeviceProxy
-from custom_components.midea_ac.number import MideaFanSpeedNumber
+from custom_components.midea_connect.climate import MideaClimateACDevice
+from custom_components.midea_connect.device_proxy import MideaDeviceProxy
+from custom_components.midea_connect.number import MideaFanSpeedNumber
 
 
 @pytest.mark.parametrize("value", [1.0, 22.0, 23.0, 99.0, 100.0])

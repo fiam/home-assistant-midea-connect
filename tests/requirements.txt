@@ -2,3 +2,10 @@ pytest
 pytest-homeassistant-custom-component
 
 msmart-ng
+
+# Imports used by Home Assistant's Bluetooth dependency (HA 2026.9).
+aiousbwatcher==1.1.2
+serialx==1.9.0
+
+# Used by the host Wi-Fi scan module and Home Assistant's Bluetooth setup.
+dbus-fast

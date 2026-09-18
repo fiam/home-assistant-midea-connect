@@ -5,8 +5,9 @@ from homeassistant.const import UnitOfEnergy, UnitOfPower
 from homeassistant.core import HomeAssistant
 from msmart.device import AirConditioner as AC
 
-from custom_components.midea_ac.coordinator import MideaDeviceUpdateCoordinator
-from custom_components.midea_ac.sensor import MideaEnergySensor
+from custom_components.midea_connect.coordinator import \
+    MideaDeviceUpdateCoordinator
+from custom_components.midea_connect.sensor import MideaEnergySensor
 
 
 async def test_energy_sensor_request_enable(

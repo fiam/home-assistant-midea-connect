@@ -1,0 +1,548 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Midea Connect",
+                "description": "Set up ACs for local control. Bluetooth connects an AC to Wi-Fi; a cloud setup account authorizes LAN access. Everyday control stays on your local network.",
+                "menu_options": {
+                    "nearby_bluetooth": "Add AC",
+                    "account": "Setup accounts",
+                    "advanced": "Advanced"
+                }
+            },
+            "discover": {
+                "description": "Laat dit veld leeg om apparaten op het netwerk automatisch te detecteren.",
+                "data": {
+                    "host": "Host",
+                    "country_code": "Cloud regio"
+                },
+                "data_description": {
+                    "country_code": "Selecteer het dichtstbijzijnde land voor uw locatie."
+                }
+            },
+            "manual": {
+                "description": "Enter information for your device.",
+                "data": {
+                    "id": "ID",
+                    "host": "Host",
+                    "port": "Port",
+                    "device_type": "Device Type",
+                    "token": "Token",
+                    "k1": "Key"
+                },
+                "data_description": {
+                    "token": "Token for V3 devices (hexadecimal)",
+                    "k1": "Key for V3 devices (hexadecimal)"
+                },
+                "title": "LAN only — connection details"
+            },
+            "reconfigure": {
+                "description": "Opnieuw instellen.",
+                "data": {
+                    "host": "Host",
+                    "port": "Port",
+                    "token": "Token",
+                    "k1": "Key"
+                },
+                "data_description": {
+                    "token": "Token voor V3-apparaten (hexadecimaal)",
+                    "k1": "Sleutel voor V3-apparaten (hexadecimaal)"
+                }
+            },
+            "nethome_account": {
+                "title": "NetHome Plus — cloud setup accounts",
+                "description": "Saved accounts:\n{accounts}\n\nManage an existing account from its integration entry. Sign in or create another account below. These accounts are used for setup, not everyday control.",
+                "menu_options": {
+                    "account_register": "Create an email account",
+                    "account_login": "Save an existing email account"
+                }
+            },
+            "smarthome_account": {
+                "title": "SmartHome / MSmartHome — cloud setup accounts",
+                "description": "Saved accounts:\n{accounts}\n\nManage an existing account from its integration entry. Sign in or create another account below. These accounts are used for setup, not everyday control.",
+                "menu_options": {
+                    "smarthome_register": "Create a SmartHome account",
+                    "smarthome_login": "Use an existing SmartHome account"
+                }
+            },
+            "smarthome_prepare": {
+                "title": "Connect to SmartHome",
+                "description": "Could not load the available countries. Submit to try again."
+            },
+            "smarthome_register": {
+                "title": "Create SmartHome account",
+                "description": "Enter your email and select your country. Midea will send a six-digit verification code. Your password is chosen after verification.\n\nRead the [SmartHome terms]({terms_url}) and [privacy notice]({privacy_url}) before submitting.",
+                "data": {
+                    "email": "Email",
+                    "region_code": "Country / region",
+                    "accept_terms": "I agree to the SmartHome terms and privacy notice"
+                }
+            },
+            "smarthome_verify": {
+                "title": "Verify your email",
+                "description": "Enter the six-digit code from Midea’s email. Check spam as well. To send another code, select the option below and submit; wait at least 60 seconds between requests.",
+                "data": {
+                    "verification_code": "Verification code",
+                    "resend_code": "Send another code instead"
+                }
+            },
+            "smarthome_password": {
+                "title": "Set your SmartHome password",
+                "description": "Your email has been verified. Choose a password to create the account. Home Assistant will verify login and save it for future AC setup.",
+                "data": {
+                    "password": "Password",
+                    "confirm_password": "Confirm password"
+                },
+                "data_description": {
+                    "password": "Use 8–20 characters, including a letter and a number, without spaces."
+                }
+            },
+            "smarthome_finish": {
+                "title": "Save your SmartHome account",
+                "description": "Enter the password you chose to verify login and save the account. This step does not submit registration again.",
+                "data": {
+                    "password": "Account password"
+                }
+            },
+            "smarthome_login": {
+                "title": "Use SmartHome account",
+                "description": "Save an existing SmartHome email/password account for obtaining local AC credentials. Use the account that owns the AC.",
+                "data": {
+                    "email": "Email",
+                    "password": "Password"
+                }
+            },
+            "account": {
+                "description": "SmartHome and NetHome Plus are separate services. Their accounts are not interchangeable. Accounts are used only for setup and retrieving local credentials; everyday control uses the LAN.",
+                "menu_options": {
+                    "smarthome_account": "SmartHome / MSmartHome",
+                    "nethome_account": "NetHome Plus"
+                },
+                "title": "Cloud setup accounts"
+            },
+            "bluetooth_confirm": {
+                "title": "Confirm at the AC controller",
+                "description": "SmartHome is waiting for confirmation on {name}. Complete the controller action below, then submit to check again. Home Assistant will keep the current Wi-Fi settings and account link.\n\n{instructions}\n\nIf no instructions are shown, use the controller’s Wi-Fi setup instructions. If the confirmation window has expired, select “Start confirmation again”.",
+                "data": {
+                    "restart_confirmation": "Start confirmation again"
+                }
+            },
+            "bluetooth_finish": {
+                "description": "Setup for {name} stopped before local control was verified. Submit to retry the remaining cloud and LAN steps. Completed Wi-Fi and account-linking steps are not repeated. Choose new Wi-Fi settings only to restart Bluetooth provisioning.",
+                "data": {
+                    "change_wifi": "Enter Wi-Fi settings and start pairing again"
+                },
+                "title": "Resume setup"
+            },
+            "bluetooth_pairing_expired": {
+                "title": "Start pairing again",
+                "description": "The account-linking window for {name} expired (Midea code 1383). Put the controller back into Wi-Fi setup mode, then submit to review its Wi-Fi settings and start a fresh pairing attempt. Retrying the previous pairing code will not reopen the window."
+            },
+            "bluetooth_setup": {
+                "title": "Bluetooth — connect AC to Wi-Fi",
+                "description": "Bluetooth connection to {name} succeeded. Keep the controller’s Wi-Fi icon flashing when you submit this form. Choose a 2.4 GHz Wi-Fi network or enter its name. Home Assistant will connect the AC, link it to your setup account and verify local control. After successful setup, the network password is saved in Home Assistant for your other ACs and included in configuration backups.",
+                "data": {
+                    "account_entry_id": "Setup account",
+                    "ssid": "Wi-Fi network name (SSID)",
+                    "wifi_password": "Wi-Fi password",
+                    "password_mode": "Network authentication"
+                },
+                "data_description": {
+                    "wifi_password": "Enter a password only when choosing Enter password. Stored passwords are never shown.",
+                    "ssid": "Nearby networks are scanned from the Home Assistant host when available. Saved networks also appear here. You can always enter a network name manually."
+                }
+            },
+            "advanced": {
+                "title": "Advanced setup",
+                "menu_options": {
+                    "manual": "LAN — enter connection details",
+                    "restore": "LAN — restore saved credentials",
+                    "account_device": "Cloud — retrieve or refresh LAN credentials"
+                }
+            },
+            "nearby_bluetooth": {
+                "title": "Nearby ACs — Bluetooth",
+                "description": "ACs seen by Home Assistant adapters and ESPHome proxies, strongest signal first. A connection route does not guarantee the AC is in setup mode. Select Refresh to check again, or find an AC already on the LAN.",
+                "data": {
+                    "address": "AC or action"
+                }
+            },
+            "setup_provider": {
+                "title": "Cloud — choose setup service",
+                "description": "Choose the service to link this AC to, or the service it already belongs to. SmartHome and NetHome Plus accounts are separate. Local control will use the saved LAN credentials.",
+                "data": {
+                    "account_provider": "Account service"
+                }
+            },
+            "setup_account_missing": {
+                "title": "Add a cloud setup account",
+                "description": "No {provider} account is saved. In another Home Assistant tab, open Midea Connect → Add entry → Set up another instance → Setup accounts → {provider}. Sign in or create an account, then return here and submit. This AC selection is kept.",
+                "data": {
+                    "change_provider": "Choose another account service"
+                }
+            },
+            "lan_credentials": {
+                "title": "LAN AC — choose credentials",
+                "description": "The AC is on the LAN. Retrieve credentials through its cloud setup account, or use existing credentials without cloud access.",
+                "menu_options": {
+                    "account_device": "Cloud — retrieve LAN credentials",
+                    "restore": "LAN only — restore saved credentials",
+                    "manual": "LAN only — enter credentials"
+                }
+            },
+            "bluetooth_lan": {
+                "title": "LAN — AC already connected",
+                "description": "{name} is already on your network at {host}. Choose the setup account linked to this AC to obtain and save its local credentials. Bluetooth is no longer needed. To link a different account or change its Wi-Fi network, choose to set it up again and put the controller in Wi-Fi setup mode.",
+                "data": {
+                    "account_entry_id": "Setup account",
+                    "setup_wifi": "Set up Wi-Fi and account linking again over Bluetooth"
+                }
+            },
+            "account_device": {
+                "description": "Choose the setup account and enter the AC’s local IP address. The AC must already be connected to Wi-Fi and linked to that account. Home Assistant will request its LAN token/key and test them locally. If the AC is already configured, this replaces its saved token/key only after verification. Normal control and restart continue to work locally.",
+                "data": {
+                    "account_entry_id": "Setup account",
+                    "host": "AC IP address"
+                },
+                "title": "Cloud — retrieve LAN credentials"
+            },
+            "restore": {
+                "description": "Paste a device credential backup. Restore checks the AC locally and does not sign in to a cloud account. If its IP address changed, enter the new host.",
+                "data": {
+                    "credentials": "Device credential backup",
+                    "host": "New host (optional)"
+                },
+                "title": "LAN only — restore credentials"
+            },
+            "bluetooth_lan_choice": {
+                "title": "LAN — AC already connected",
+                "description": "Choose how to authorize local control, or explicitly restart Bluetooth Wi-Fi provisioning.",
+                "menu_options": {
+                    "bluetooth_cloud": "Cloud — retrieve LAN credentials",
+                    "restore": "LAN only — restore saved credentials",
+                    "manual": "LAN only — enter credentials",
+                    "bluetooth_restart": "Bluetooth — set up Wi-Fi again"
+                }
+            },
+            "bluetooth_found": {
+                "title": "AC found over Bluetooth",
+                "description": "Connect to {name} over Bluetooth to set up local control. Put the controller in Wi-Fi setup mode. If Bluetooth is unavailable, Home Assistant checks whether this AC is already on the LAN.",
+                "menu_options": {
+                    "bluetooth_connect": "Connect this AC"
+                }
+            }
+        },
+        "abort": {
+            "already_configured": "Dit apparaat is al ingesteld.",
+            "already_configured_devices_found": "Geen nieuwe apparaten gevonden op het netwerk.\n\nAl geconfigureerd op dit netwerk:\n{devices}",
+            "cannot_connect": "Het apparaat kon niet worden bereikt.",
+            "cloud_connection_failed": "Cloudverbinding is mislukt.",
+            "no_devices_found": "Geen ondersteunde apparaten gevonden op het netwerk.",
+            "reconfigure_successful": "Apparaat succesvol opnieuw ingesteld."
+        },
+        "error": {
+            "cannot_connect": "Met deze instellingen kon geen verbinding worden gemaakt.",
+            "device_not_found": "Apparaat niet gevonden op het netwerk.",
+            "unsupported_device": "Dit apparaat wordt niet ondersteund.",
+            "invalid_hex_format": "Ongeldig hexadecimaal formaat.",
+            "smarthome_code_send_failed": "Midea could not send a verification code. Check the email address and try again.",
+            "smarthome_code_send_uncertain": "Midea did not confirm sending the code. Check your email before requesting another one.",
+            "smarthome_resend_wait": "Wait at least 60 seconds before requesting another verification code.",
+            "smarthome_invalid_code": "The code is invalid or expired. Enter the six-digit code from the latest email, or request another one.",
+            "smarthome_invalid_password": "Use 8–20 characters with a letter and a number, without spaces.",
+            "smarthome_finish_login_failed": "Could not verify the new account. Check your password and retry. Registration will not be sent again.",
+            "smarthome_account_not_found": "SmartHome could not find this account. Create a SmartHome account or use an existing SmartHome email login.",
+            "smarthome_registration_uncertain": "Midea did not confirm account creation. Enter your chosen password to check whether it succeeded. Registration has not been repeated.",
+            "smarthome_device_not_owned": "This AC is not linked to this SmartHome account. From the nearby AC setup, choose to set up Wi-Fi and account linking again over Bluetooth, then select this account.",
+            "smarthome_lookup_failed": "SmartHome could not verify this AC’s Bluetooth setup code (code {code}). Submit to retry without sending Wi-Fi settings again. If the code has expired, put the AC in setup mode and choose to enter Wi-Fi settings again.",
+            "smarthome_confirmation_required": "SmartHome is waiting for confirmation at the AC controller.",
+            "smarthome_confirmation_failed": "Could not check or start the AC’s confirmation step. Submit to retry; Wi-Fi settings and completed account linking will not be repeated.",
+            "smarthome_ownership_pending": "SmartHome accepted linking, but this AC has not appeared in the account yet. Wait briefly, then submit to check again. Wi-Fi settings and account linking will not be repeated.",
+            "smarthome_pairing_expired": "The account-linking window expired (Midea code 1383). Put the controller back into Wi-Fi setup mode and start pairing again.",
+            "ble_wifi_password_required": "Enter a password, select a matching saved password, or explicitly choose Open network.",
+            "ble_open_network_password": "A password was entered for a network marked as open. Turn off the open-network option, or clear the password if the network really has none.",
+            "no_bluetooth_scanner": "No Bluetooth scanner is available. Enable an HA adapter or ESPHome proxy, then refresh. LAN setup is also available.",
+            "no_bluetooth_devices": "No nearby ACs are currently available. Put the controller in Wi-Fi setup mode and refresh, or search the LAN.",
+            "bluetooth_disappeared": "This AC is no longer available. Refresh or search the LAN.",
+            "smarthome_device_offline": "SmartHome reports this AC as offline (code 3123). Check that the controller is powered and connected to Wi-Fi, then retry. Completed Wi-Fi and account-linking steps will not be repeated."
+        },
+        "progress": {
+            "bluetooth_connecting": "Connecting to the AC over Bluetooth…",
+            "bluetooth_provisioning": "Bluetooth → Wi-Fi; cloud → account authorization; LAN → verify local control…",
+            "cloud_login": "Cloud — checking setup account…",
+            "bluetooth_wifi": "Bluetooth — sending Wi-Fi settings…",
+            "cloud_link": "Cloud — linking the AC to the selected account…",
+            "lan_search": "LAN — finding the AC on your network…",
+            "cloud_credentials": "Cloud → LAN — retrieving credentials and verifying local control…",
+            "lan_verified": "LAN — local control verified. Saving credentials…"
+        },
+        "create_entry": {
+            "local_device": "Local control is verified. Device credentials are saved automatically in Home Assistant and included in configuration backups. Everyday control uses the LAN.",
+            "default": "Cloud setup account saved. Use Add AC to authorize local control for an air conditioner."
+        }
+    },
+    "options": {
+        "step": {
+            "settings": {
+                "description": "Geavanceerde integratie-instellingen.",
+                "data": {
+                    "prompt_tone": "Piep inschakelen",
+                    "temp_step": "Stapgrootte voor temperatuur",
+                    "fan_speed_step": "Stapgrootte voor ventilatorsnelheid",
+                    "max_connection_lifetime": "Maximale verbindingsduur",
+                    "swing_angle_rtl": "Horizontale blaasrichting omdraaien"
+                },
+                "data_description": {
+                    "temp_step": "Stapgrootte voor ingestelde temperatuur",
+                    "fan_speed_step": "Stapgrootte voor aangepaste ventilatorsnelheden",
+                    "max_connection_lifetime": "Hoe lang een verbinding maximaal wordt gebruikt in seconden (minimaal 15)"
+                },
+                "sections": {
+                    "energy_sensor": {
+                        "name": "Formaat voor energiesensor",
+                        "description": "Pas het formaat van de energiesensor aan",
+                        "data": {
+                            "energy_data_format": "Gegevensformaat",
+                            "energy_data_scale": "Schaal"
+                        },
+                        "data_description": {
+                            "energy_data_scale": "Factor om het gerapporteerde energieverbruik te schalen"
+                        }
+                    },
+                    "power_sensor": {
+                        "name": "Formaat voor vermogenssensor",
+                        "description": "Pas het formaat van de vermogenssensor aan",
+                        "data": {
+                            "energy_data_format": "Gegevensformaat",
+                            "energy_data_scale": "Schaal"
+                        },
+                        "data_description": {
+                            "energy_data_scale": "Factor om het gerapporteerde energieverbruik te schalen"
+                        }
+                    },
+                    "workarounds": {
+                        "name": "Workarounds",
+                        "data": {
+                            "use_fan_only_workaround": "Fan-only workaround gebruiken",
+                            "show_all_presets": "Alle presets tonen",
+                            "additional_operation_modes": "Extra functies"
+                        },
+                        "data_description": {
+                            "additional_operation_modes": "Specificeer extra functies"
+                        }
+                    }
+                }
+            },
+            "init": {
+                "description": "Device credentials are saved automatically and included in Home Assistant backups.",
+                "menu_options": {
+                    "settings": "Device settings",
+                    "show_credentials": "Show device credentials",
+                    "connection_details": "Connection details"
+                }
+            },
+            "connection_details": {
+                "title": "LAN connection",
+                "description": "Control: local network (no cloud login required)\n\nLAN address: {host}\n\nCloud setup account: {account}\n\nUpdates: {updates}\n\nLast successful local communication (UTC): {last_seen}"
+            }
+        }
+    },
+    "selector": {
+        "energy_data_format": {
+            "options": {
+                "bcd": "BCD",
+                "binary": "Binair"
+            }
+        }
+    },
+    "services": {
+        "set_follow_me": {
+            "name": "Follow me inschakelen",
+            "description": "Stel de Follow me functie in.",
+            "fields": {
+                "enabled": {
+                    "name": "Ingeschakeld",
+                    "description": "Of Follow me ingeschakeld moet zijn."
+                }
+            }
+        }
+    },
+    "entity": {
+        "climate": {
+            "midea_connect": {
+                "state_attributes": {
+                    "fan_mode": {
+                        "state": {
+                            "silent": "Stil",
+                            "low": "Laag",
+                            "medium": "Medium",
+                            "high": "Hoog",
+                            "max": "Max",
+                            "auto": "Auto",
+                            "custom": "Zelf instellen",
+                            "l1": "Niveau 1",
+                            "l2": "Niveau 2",
+                            "l3": "Niveau 3",
+                            "l4": "Niveau 4",
+                            "l5": "Niveau 5",
+                            "l6": "Niveau 6",
+                            "l7": "Niveau 7"
+                        }
+                    },
+                    "preset_mode": {
+                        "state": {
+                            "ieco": "iECO / ECOMaster",
+                            "silent": "Stil"
+                        }
+                    },
+                    "swing_mode": {
+                        "state": {
+                            "off": "Uit",
+                            "vertical": "Verticaal",
+                            "horizontal": "Horizontaal",
+                            "both": "Beide"
+                        }
+                    }
+                }
+            }
+        },
+        "binary_sensor": {
+            "filter_alert": {
+                "name": "Filterwaarschuwing"
+            },
+            "self_clean": {
+                "name": "Zelfreiniging"
+            }
+        },
+        "button": {
+            "self_clean": {
+                "name": "Start zelfreiniging"
+            }
+        },
+        "number": {
+            "fan_speed": {
+                "name": "Ventilatorsnelheid"
+            }
+        },
+        "select": {
+            "aux_mode": {
+                "name": "Hulpverwarming",
+                "state": {
+                    "off": "Uit",
+                    "aux_heat": "Normaal & hulp",
+                    "aux_only": "Alleen hulp",
+                    "on": "Aan",
+                    "auto": "Auto"
+                }
+            },
+            "cascade": {
+                "name": "Cascademodus",
+                "state": {
+                    "off": "Uit",
+                    "up": "Omhoog",
+                    "down": "Omlaag"
+                }
+            },
+            "horizontal_swing_angle": {
+                "name": "Horizontale blaasrichting",
+                "state": {
+                    "off": "Uit",
+                    "pos_1": "Links",
+                    "pos_2": "Links-midden",
+                    "pos_3": "Midden",
+                    "pos_4": "Rechts-midden",
+                    "pos_5": "Rechts",
+                    "close": "Dicht",
+                    "auto": "Auto"
+                }
+            },
+            "horizontal_swing_angle_rtl": {
+                "name": "Horizontale blaasrichting",
+                "state": {
+                    "off": "Uit",
+                    "pos_1": "Rechts",
+                    "pos_2": "Rechts-midden",
+                    "pos_3": "Midden",
+                    "pos_4": "Links-midden",
+                    "pos_5": "Links",
+                    "close": "Dicht",
+                    "auto": "Auto"
+                }
+            },
+            "purifier": {
+                "name": "Luchtreinigingsmodus",
+                "state": {
+                    "off": "Uit",
+                    "on": "Aan",
+                    "auto": "Auto"
+                }
+            },
+            "rate_select": {
+                "name": "Vermogensniveau",
+                "state": {
+                    "off": "Uit",
+                    "gear_75": "75%",
+                    "gear_50": "50%",
+                    "level_5": "Niveau 5",
+                    "level_4": "Niveau 4",
+                    "level_3": "Niveau 3",
+                    "level_2": "Niveau 2",
+                    "level_1": "Niveau 1"
+                }
+            },
+            "vertical_swing_angle": {
+                "name": "Verticale blaasrichting",
+                "state": {
+                    "off": "Uit",
+                    "pos_1": "Omhoog",
+                    "pos_2": "Omhoog-midden",
+                    "pos_3": "Midden",
+                    "pos_4": "Omlaag-midden",
+                    "pos_5": "Omlaag",
+                    "close": "Dicht",
+                    "auto": "Auto"
+                }
+            }
+        },
+        "sensor": {
+            "current_energy_usage": {
+                "name": "Verbruikt gedurende levensduur"
+            },
+            "indoor_humidity": {
+                "name": "Luchtvochtigheid binnen"
+            },
+            "indoor_temperature": {
+                "name": "Binnentemperatuur"
+            },
+            "outdoor_temperature": {
+                "name": "Buitentemperatuur"
+            },
+            "real_time_power_usage": {
+                "name": "Huidig verbruik"
+            },
+            "total_energy_usage": {
+                "name": "Totaal energieverbruik"
+            }
+        },
+        "switch": {
+            "breeze_away": {
+                "name": "Indirecte luchtstroom"
+            },
+            "breeze_mild": {
+                "name": "Zachte luchtstroom"
+            },
+            "breezeless": {
+                "name": "Geen luchtstroom"
+            },
+            "display": {
+                "name": "Display"
+            },
+            "flash": {
+                "name": "Snel afkoelen"
+            },
+            "purifier": {
+                "name": "Luchtreiniger"
+            }
+        }
+    }
+}

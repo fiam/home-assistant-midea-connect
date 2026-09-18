@@ -1,0 +1,28 @@
+{
+  "domain": "midea_connect",
+  "name": "Midea Connect",
+  "bluetooth": [
+    {
+      "manufacturer_id": 1704,
+      "connectable": false
+    }
+  ],
+  "codeowners": [
+    "@fiam"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "bluetooth_adapters"
+  ],
+  "documentation": "https://github.com/fiam/home-assistant-midea-connect",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/fiam/home-assistant-midea-connect/issues",
+  "loggers": [
+    "msmart"
+  ],
+  "requirements": [
+    "msmart-ng==2026.9.0",
+    "pyyaml"
+  ],
+  "version": "2026.9.1"
+}

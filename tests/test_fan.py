@@ -11,8 +11,9 @@ from homeassistant.helpers import entity_registry as er
 from msmart.device import AirConditioner as AC
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.midea_ac.const import DOMAIN
-from custom_components.midea_ac.coordinator import MideaDeviceUpdateCoordinator
+from custom_components.midea_connect.const import DOMAIN
+from custom_components.midea_connect.coordinator import \
+    MideaDeviceUpdateCoordinator
 
 logging.basicConfig(level=logging.DEBUG)
 _LOGGER = logging.getLogger(__name__)

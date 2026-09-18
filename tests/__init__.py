@@ -1,1 +1,1 @@
-"""Tests for the Midea Smart AC integration."""
+"""Tests for the Midea Connect integration."""

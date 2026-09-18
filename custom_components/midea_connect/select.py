@@ -1,0 +1,142 @@
+"""Platform for select integration."""
+from __future__ import annotations
+
+import logging
+from typing import List, Optional
+
+from homeassistant.components.select import SelectEntity
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from msmart.utils import MideaIntEnum
+
+from .const import CONF_SWING_ANGLE_RTL, DOMAIN
+from .coordinator import MideaCoordinatorEntity, MideaDeviceUpdateCoordinator
+
+_LOGGER = logging.getLogger(__name__)
+
+
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    add_entities: AddEntitiesCallback,
+) -> None:
+    """Setup the select platform for Midea Connect."""
+
+    _LOGGER.info("Setting up select platform.")
+
+    # Fetch coordinator from global data
+    coordinator = hass.data[DOMAIN][config_entry.entry_id]
+    device = coordinator.device
+
+    # Create entities for supported features
+    entities = []
+    if hasattr(device, "vertical_swing_angle") and getattr(device, "supports_vertical_swing_angle", False):
+        entities.append(MideaEnumSelect(coordinator,
+                                        "vertical_swing_angle",
+                                        device.SwingAngle
+                                        ))
+
+    if hasattr(device, "horizontal_swing_angle") and getattr(device, "supports_horizontal_swing_angle", False):
+        entities.append(MideaEnumSelect(coordinator,
+                                        "horizontal_swing_angle",
+                                        device.SwingAngle,
+                                        translation_key="horizontal_swing_angle_rtl" if config_entry.options.get(
+                                            CONF_SWING_ANGLE_RTL) else None
+                                        ))
+
+    supported_rates = getattr(device, "supported_rate_selects", [])
+    if hasattr(device, "rate_select") and len(supported_rates) > 1:
+        entities.append(MideaEnumSelect(coordinator,
+                                        "rate_select",
+                                        device.RateSelect,
+                                        options=supported_rates
+                                        ))
+
+    supported_aux_modes = getattr(device, "supported_aux_modes", [])
+    if hasattr(device, "aux_mode") and len(supported_aux_modes) > 1:
+        entities.append(MideaEnumSelect(coordinator,
+                                        "aux_mode",
+                                        device.AuxHeatMode,
+                                        options=supported_aux_modes
+                                        ))
+
+    if hasattr(device, "cascade_mode") and getattr(device, "supports_cascade", False):
+        entities.append(MideaEnumSelect(coordinator,
+                                        "cascade_mode",
+                                        device.CascadeMode,
+                                        translation_key="cascade"
+                                        ))
+
+    # Add select for purifier with 3 or more modes
+    supported_purifier_modes = getattr(device, "supported_purifier_modes", [])
+    if hasattr(device, "purifier") and len(supported_purifier_modes) > 2:
+        entities.append(MideaEnumSelect(coordinator,
+                                        "purifier",
+                                        device.PurifierMode,
+                                        options=supported_purifier_modes
+                                        ))
+
+    add_entities(entities)
+
+
+class MideaEnumSelect(MideaCoordinatorEntity, SelectEntity):
+    """Enum based select for Midea AC."""
+
+    def __init__(self,
+                 coordinator: MideaDeviceUpdateCoordinator,
+                 prop: str,
+                 enum_class: MideaIntEnum,
+                 *,
+                 translation_key: str | None = None,
+                 options: List[MideaIntEnum] | None = None) -> None:
+        MideaCoordinatorEntity.__init__(self, coordinator)
+
+        self._prop = prop
+        self._enum_class = enum_class
+        self._attr_translation_key = translation_key if translation_key is not None else prop
+        self._options = options
+
+    @property
+    def device_info(self) -> dict:
+        """Return info for device registry."""
+        return {
+            "identifiers": {
+                (DOMAIN, self._device.id)
+            },
+        }
+
+    @property
+    def has_entity_name(self) -> bool:
+        """Indicates if entity follows naming conventions."""
+        return True
+
+    @property
+    def unique_id(self) -> str:
+        """Return the unique ID of this entity."""
+        return f"{self._device.id}-{self._prop}"
+
+    @property
+    def available(self) -> bool:
+        """Check device availability."""
+        return super().available and self._device.power_state
+
+    @property
+    def current_option(self) -> str:
+        """Get selected option."""
+        return getattr(self._device, self._prop, self._enum_class.DEFAULT).name.lower()
+
+    @property
+    def options(self) -> List[str]:
+        """Get available options."""
+        opts = self._options if self._options is not None else self._enum_class.list()
+        return [m.name.lower() for m in opts]
+
+    async def async_select_option(self, option: str) -> None:
+        """Change the selected option."""
+
+        setattr(self._device, self._prop,
+                self._enum_class.get_from_name(option.upper()))
+
+        # Apply via the coordinator
+        await self.coordinator.apply()

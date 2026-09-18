@@ -10,14 +10,15 @@ from homeassistant.core import HomeAssistant
 from msmart.device import AirConditioner as AC
 from msmart.lan import _LanProtocol
 
-from custom_components.midea_ac.binary_sensor import (MideaGroup2BinarySensor,
-                                                      MideaGroup5BinarySensor)
-from custom_components.midea_ac.coordinator import MideaDeviceUpdateCoordinator
-from custom_components.midea_ac.sensor import (MideaGroup1Sensor,
-                                               MideaGroup2Sensor,
-                                               MideaGroup5Sensor,
-                                               MideaGroup7Sensor,
-                                               MideaGroup11Sensor)
+from custom_components.midea_connect.binary_sensor import (
+    MideaGroup2BinarySensor, MideaGroup5BinarySensor)
+from custom_components.midea_connect.coordinator import \
+    MideaDeviceUpdateCoordinator
+from custom_components.midea_connect.sensor import (MideaGroup1Sensor,
+                                                    MideaGroup2Sensor,
+                                                    MideaGroup5Sensor,
+                                                    MideaGroup7Sensor,
+                                                    MideaGroup11Sensor)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -62,7 +63,7 @@ async def test_concurrent_network_access_exception(
     _mock_lan_protocol(device._lan)
 
     # logging.getLogger("msmart").setLevel(logging.DEBUG)
-    # logging.getLogger("custom_components.midea_ac").setLevel(logging.DEBUG)
+    # logging.getLogger("custom_components.midea_connect").setLevel(logging.DEBUG)
 
     # Patch the asyncio Lock object to be non-functional
     with (
@@ -136,7 +137,7 @@ async def test_refresh_apply_race_condition(
     mock_device.target_temperature = 17
 
     # Create our coordinator without using a device proxy
-    with patch("custom_components.midea_ac.coordinator.MideaDeviceProxy") as mock_proxy:
+    with patch("custom_components.midea_connect.coordinator.MideaDeviceProxy") as mock_proxy:
         mock_proxy.return_value = mock_device
         coordinator = MideaDeviceUpdateCoordinator(hass, mock_device)
 

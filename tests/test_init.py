@@ -10,18 +10,12 @@ from homeassistant.core import HomeAssistant
 from msmart.const import DeviceType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.midea_ac.const import (CONF_ADDITIONAL_OPERATION_MODES,
-                                              CONF_CAPABILITY_OVERRIDES,
-                                              CONF_DEVICE_TYPE,
-                                              CONF_ENERGY_DATA_FORMAT,
-                                              CONF_ENERGY_DATA_SCALE,
-                                              CONF_ENERGY_SENSOR,
-                                              CONF_POWER_SENSOR,
-                                              CONF_SHOW_ALL_PRESETS,
-                                              CONF_UPDATE_INTERVAL,
-                                              CONF_USE_FAN_ONLY_WORKAROUND,
-                                              CONF_WORKAROUNDS, DOMAIN,
-                                              UPDATE_INTERVAL, EnergyFormat)
+from custom_components.midea_connect.const import (
+    CONF_ADDITIONAL_OPERATION_MODES, CONF_CAPABILITY_OVERRIDES,
+    CONF_DEVICE_TYPE, CONF_ENERGY_DATA_FORMAT, CONF_ENERGY_DATA_SCALE,
+    CONF_ENERGY_SENSOR, CONF_POWER_SENSOR, CONF_SHOW_ALL_PRESETS,
+    CONF_UPDATE_INTERVAL, CONF_USE_FAN_ONLY_WORKAROUND, CONF_WORKAROUNDS,
+    DOMAIN, UPDATE_INTERVAL, EnergyFormat)
 
 logging.basicConfig(level=logging.DEBUG)
 _LOGGER = logging.getLogger(__name__)
@@ -60,7 +54,7 @@ async def test_config_entry_migration_from_5(hass: HomeAssistant) -> None:
 
     # Setup entry to trigger migration
     with patch(
-        "custom_components.midea_ac.async_setup_entry",
+        "custom_components.midea_connect.async_setup_entry",
         return_value=True,
     ):
         mock_config_entry.add_to_hass(hass)
@@ -99,7 +93,7 @@ async def test_config_entry_migration_from_4(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.midea_ac.async_setup_entry",
+        "custom_components.midea_connect.async_setup_entry",
         return_value=True,
     ):
         mock_config_entry.add_to_hass(hass)
@@ -128,7 +122,7 @@ async def test_config_entry_migration_from_3(hass: HomeAssistant) -> None:
 
     # Setup entry to trigger migration
     with patch(
-        "custom_components.midea_ac.async_setup_entry",
+        "custom_components.midea_connect.async_setup_entry",
         return_value=True,
     ):
         mock_config_entry.add_to_hass(hass)
@@ -201,7 +195,7 @@ async def test_config_entry_migration_from_3_energy_formats(
 
     # Setup entry to trigger migration
     with patch(
-        "custom_components.midea_ac.async_setup_entry",
+        "custom_components.midea_connect.async_setup_entry",
         return_value=True,
     ):
         mock_config_entry.add_to_hass(hass)
@@ -251,7 +245,7 @@ async def test_config_entry_migration_from_2(
 
     # Setup entry to trigger migration
     with patch(
-        "custom_components.midea_ac.async_setup_entry",
+        "custom_components.midea_connect.async_setup_entry",
         return_value=True,
     ):
         mock_config_entry.add_to_hass(hass)
@@ -287,7 +281,7 @@ async def test_config_entry_migration_from_1(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.midea_ac.async_setup_entry",
+        "custom_components.midea_connect.async_setup_entry",
         return_value=True,
     ):
         mock_config_entry.add_to_hass(hass)
@@ -313,7 +307,7 @@ async def test_config_entry_migration_from_6(hass: HomeAssistant) -> None:
     )
 
     with patch(
-        "custom_components.midea_ac.async_setup_entry",
+        "custom_components.midea_connect.async_setup_entry",
         return_value=True,
     ):
         mock_config_entry.add_to_hass(hass)
@@ -336,8 +330,8 @@ async def test_unload_entry_success(
     """Test a successful unload removes the coordinator from global data."""
 
     # Patch refresh and get_capabilities calls to allow integration to setup
-    with (patch("custom_components.midea_ac.config_flow.AC.get_capabilities"),
-          patch("custom_components.midea_ac.config_flow.AC.refresh")):
+    with (patch("custom_components.midea_connect.config_flow.AC.get_capabilities"),
+          patch("custom_components.midea_connect.config_flow.AC.refresh")):
         mock_config_entry.add_to_hass(hass)
         await hass.config_entries.async_setup(mock_config_entry.entry_id)
         await hass.async_block_till_done()
@@ -360,8 +354,8 @@ async def test_unload_entry_platform_failure(
     """Test a failed platform unload leaves the coordinator in global data."""
 
     # Patch refresh and get_capabilities calls to allow integration to setup
-    with (patch("custom_components.midea_ac.config_flow.AC.get_capabilities"),
-          patch("custom_components.midea_ac.config_flow.AC.refresh")):
+    with (patch("custom_components.midea_connect.config_flow.AC.get_capabilities"),
+          patch("custom_components.midea_connect.config_flow.AC.refresh")):
         mock_config_entry.add_to_hass(hass)
         await hass.config_entries.async_setup(mock_config_entry.entry_id)
         await hass.async_block_till_done()

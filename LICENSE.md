@@ -1,5 +1,6 @@
 MIT License
 
+Copyright (c) 2026 Alberto Garcia Hierro (@fiam)
 Copyright (c) 2022-2026 Tucker Kern
 Copyright (c) 2020 Mac_Zhou (@mac-zhou)
 Copyright (c) 2019 Josh Anderson (@andersonshatch)

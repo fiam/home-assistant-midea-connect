@@ -2,3 +2,9 @@ __pycache__/
 .venv/
 .vscode/
 .devcontainer/devcontainer-lock.json
+
+# Research notes, probes, APKs, captures and upstream checkouts stay local.
+/research/
+# Local deployment and diagnostic tooling stays outside version control.
+/tools/
+**/private-credentials/
