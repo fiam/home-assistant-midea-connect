@@ -27,6 +27,11 @@ authors; see [LICENSE.md](LICENSE.md).
   export without cloud access.
 - **LAN push.** V3 ACs deliver unsolicited status reports on the existing authenticated
   connection between polls; the configured polling interval remains as a fallback.
+- **Automatic LAN address recovery.** If a saved address stops responding, local UDP
+  discovery finds the AC again. Its device identity and saved credentials must match
+  before HA saves the new address and reconnects. Scans are shared and limited to once
+  per minute; no cloud login or full address-range probing is needed. Broadcast discovery
+  normally stays on the local subnet; routed networks may require a manual address.
 - **Optional host Wi-Fi scanning** through a D-Bus service; manual SSID entry always works.
 
 ## Installation

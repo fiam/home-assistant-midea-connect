@@ -9,13 +9,15 @@ from typing import Generic
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.debounce import Debouncer
 from homeassistant.helpers.update_coordinator import (CoordinatorEntity,
-                                                      DataUpdateCoordinator)
+                                                      DataUpdateCoordinator, UpdateFailed)
 from msmart.device.AC.command import InvalidResponseException
 from msmart.frame import InvalidFrameException
+from msmart.lan import AuthenticationError, ProtocolError
 
 from .const import DOMAIN, UPDATE_INTERVAL, MideaDevice
 from .device_proxy import MideaDeviceProxy
 from .lan_push import PushAirConditioner
+from .lan_discovery import async_recover_address
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,7 +26,7 @@ class MideaDeviceUpdateCoordinator(DataUpdateCoordinator, Generic[MideaDevice]):
     """Device update coordinator for Midea Connect."""
 
     def __init__(self, hass: HomeAssistant, device: MideaDevice,
-                 update_interval: int = UPDATE_INTERVAL, *, device_name: str | None = None) -> None:
+                 update_interval: int = UPDATE_INTERVAL, *, device_name: str | None = None, address_entry=None) -> None:
         super().__init__(
             hass,
             _LOGGER,
@@ -38,6 +40,7 @@ class MideaDeviceUpdateCoordinator(DataUpdateCoordinator, Generic[MideaDevice]):
             )
         )
 
+        self._address_entry = address_entry
         self.device_name = device_name
         self.last_local_success = None
         self._lock = Lock()
@@ -120,13 +123,27 @@ class MideaDeviceUpdateCoordinator(DataUpdateCoordinator, Generic[MideaDevice]):
             async with self._lock:
                 self._push_device.push_lan._disconnect()
 
+    async def _async_recover_address(self) -> None:
+        if self._address_entry is None:
+            return
+        recovered = await async_recover_address(self.hass, self._address_entry)
+        if recovered and self._address_entry.entry_id not in self.hass.data.get(DOMAIN, {}):
+            # First refresh precedes registration of the reload listener.
+            raise UpdateFailed("AC address changed; retrying at its verified LAN address")
+
     async def _async_update_data(self) -> None:
-        """Update the device data."""
+        """Refresh locally, rediscovering a moved device after network failure."""
         async with self._lock:
-            await self._proxy.refresh()
+            try:
+                await self._proxy.refresh()
+            except (AuthenticationError, OSError, ProtocolError) as exc:
+                await self._async_recover_address()
+                raise UpdateFailed("AC LAN connection unavailable") from exc
             if self._proxy.online:
                 self.last_local_success = datetime.datetime.now(
                     datetime.timezone.utc).isoformat()
+            else:
+                await self._async_recover_address()
 
     async def apply(self) -> None:
         """Apply changes to the device and update HA state."""

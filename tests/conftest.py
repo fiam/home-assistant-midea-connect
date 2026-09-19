@@ -1,5 +1,5 @@
 """Pytest fixtures for testing Midea Connect."""
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from homeassistant.const import CONF_HOST, CONF_ID, CONF_PORT, CONF_TOKEN
@@ -14,7 +14,10 @@ from custom_components.midea_connect.const import (CONF_DEVICE_TYPE, CONF_KEY,
 
 @pytest.fixture(autouse=True)
 def auto_enable_custom_integrations(enable_custom_integrations, mock_bluetooth):
-    yield
+    # Offline fixtures must not send real discovery packets. Tests that need
+    # advertisements override this with their own explicit discovery result.
+    with patch("custom_components.midea_connect.lan_discovery.Discover.discover", return_value=[]):
+        yield
 
 
 @pytest.fixture

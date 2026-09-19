@@ -27,6 +27,7 @@ from .const import (CONF_ADDITIONAL_OPERATION_MODES, CONF_CAPABILITY_OVERRIDES,
                     ENTRY_KIND_ACCOUNT, UPDATE_INTERVAL, EnergyFormat)
 from .coordinator import MideaDeviceUpdateCoordinator
 from .lan_push import PushAirConditioner
+from .lan_discovery import async_recover_address
 
 _LOGGER = logging.getLogger(__name__)
 _PLATFORMS = [
@@ -84,7 +85,10 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     if token and key:
         try:
             await device.authenticate(token, key)
-        except AuthenticationError as e:
+        except (AuthenticationError, OSError, TimeoutError) as e:
+            device._lan._disconnect()
+            if await async_recover_address(hass, config_entry):
+                raise ConfigEntryNotReady("AC address changed; retrying at its verified LAN address") from e
             raise ConfigEntryNotReady(
                 "Failed to authenticate with device.") from e
 
@@ -111,7 +115,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> b
     _LOGGER.info(
         "Using update interval of %d seconds for device ID %s.", poll_interval, device.id)
     coordinator = MideaDeviceUpdateCoordinator(
-        hass, device, update_interval=poll_interval, device_name=config_entry.title)  # type: ignore
+        hass, device, update_interval=poll_interval, device_name=config_entry.title, address_entry=config_entry)  # type: ignore
     await coordinator.async_config_entry_first_refresh()
 
     # Store coordinator in global data
